@@ -11,7 +11,7 @@ if (!require('fuzzyjoin')) install.packages('fuzzyjoin'); library('fuzzyjoin')
 if (!require('sf')) install.packages('sf'); library('sf')
 if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
-if (!require('cowplot')) install.packages('ggplot2'); library('ggplot2')
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 # set working directory
 
