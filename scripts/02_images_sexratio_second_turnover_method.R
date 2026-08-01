@@ -13,6 +13,8 @@ if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
+# ! Before running section 5, run all script 03 !
+
 # set working directory
 
 setwd(dirname(file.choose()))
