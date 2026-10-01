@@ -1,24 +1,20 @@
 
-# load required packages
+# Script 1/3
+# Population trend, temporal intervals between camera-trap records and first turnover calculation method
 
+# Load required packages
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
-if (!require('vistime')) install.packages('vistime'); library('vistime')
-if (!require('zoo')) install.packages('zoo'); library('zoo')
 if (!require('stringi')) install.packages('stringi'); library('stringi')
-if (!require('fuzzyjoin')) install.packages('fuzzyjoin'); library('fuzzyjoin')
-if (!require('sf')) install.packages('sf'); library('sf')
 if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
-# set working directory
-
+# Set working directory
 setwd(dirname(file.choose()))
 
-# import all images, select desired period and remove kitten observations
-
+# Import all images, select desired period and remove juvenile observations
 export_lynxDB <- read.csv(file = file.choose())
 
 export_lynxDB2 <- export_lynxDB %>%
@@ -26,49 +22,39 @@ export_lynxDB2 <- export_lynxDB %>%
     datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone())
   )
 
-min(export_lynxDB2$datum_vrijeme)
-max(export_lynxDB2$datum_vrijeme)
-
 b_10_24 <- export_lynxDB2 %>%
   filter(`datum_vrijeme` >= "2010-05-01 00:00:00 UTC")
 
 b_10_24 <- b_10_24 %>%
-  filter(!grepl(('mlado'), oznaka)) %>%
-  filter(!grepl(('mladu'), oznaka)) %>%
-  filter(!grepl(('Mlado'), oznaka)) %>%
-  filter(!grepl(('Mladu'), oznaka))
+  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
+# *************************  1. Minimum and maximum numbers of identified lynx  *************************
 
-# *************************  1. minimum and maximum numbers of identified lynx  *************************
-
-# list of lynx depending on which side is captured
+# List of individuals depending on which side they are captured
 
 lynx_L <- b_10_24 %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>%
   summarize(slikana_strana_zivotinje = first(slikana_strana_zivotinje)) %>% 
   rename(slikana_strana_zivotinje3=slikana_strana_zivotinje) %>%
-  filter(slikana_strana_zivotinje3 == 'lijeva')                           # 211 captured from the left side
+  filter(slikana_strana_zivotinje3 == 'lijeva')   # 211 captured from the left side
 
 lynx_R <- b_10_24 %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>% 
   summarize(slikana_strana_zivotinje = first(slikana_strana_zivotinje)) %>% 
   rename(slikana_strana_zivotinje2=slikana_strana_zivotinje) %>% 
-  filter(slikana_strana_zivotinje2 == 'desna')                            # 225 captured from the right side
+  filter(slikana_strana_zivotinje2 == 'desna')   # 225 captured from the right side
 
-lynx_LR <- lynx_L %>% inner_join(lynx_R)                      # 150 captured from both sides
+lynx_LR <- lynx_L %>% inner_join(lynx_R)   # 150 captured from both sides
 
-# minimum lynx number, it takes the highest between the number of right or left captures. Here the right captures are more
+# Minimum quantity: the highest between the number of captures from the right side and those from the left side. Here, the first ones are more
 
-ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)     # 225
+ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)   # 225
 
-# maximum lynx number, if all those captured from the left side are different than those captured from the right side
+# Maximum lynx number: case in which all the individuals captured from the left side are different than those captured from the right side
 
-ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))
+ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))   # 286
 
-# 286
-
-
-# ***********************  2. capture intervals and population trend plot  ***************************
+# ***********************  2. Capture intervals and population trend plot  ***************************
 
 b_10_24 <- b_10_24 %>%
   semi_join(lynx_min)
