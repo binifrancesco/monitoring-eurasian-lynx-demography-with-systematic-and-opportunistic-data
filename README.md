@@ -1,4 +1,4 @@
-# Data and code for: Bini, F., Topličanec, I., Sindičić, M., & Gomerčić, T. (2026). Integrating Systematic and Opportunistic Camera Trap Data to Monitor Eurasian Lynx Demography. *Journal of Zoology, 330*(1), 50-61. https://doi.org/10.1111/jzo.70144
+# Data and code for: Bini, F., Topličanec, I., Sindičić, M., & Gomerčić, T. (2026). Integrating systematic and opportunistic camera trap data to monitor Eurasian lynx demography. *Journal of Zoology, 330*(1), 50-61. https://doi.org/10.1111/jzo.70144
 
 This repository contains the R scripts and datasets required to reproduce the analyses, figures and tables presented in the accompanying manuscript. The filenames indicate the order in which the scripts should be run and the dataset used by each script.
 
