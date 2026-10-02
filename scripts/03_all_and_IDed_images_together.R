@@ -88,5 +88,3 @@ ggplot() +
   ggtitle("Number of photos by season") +
   xlab("Season") +
   ylab("Number")
-
-# ! This plot is different to the one appearing in the paper as it refers to an earlier draft !
