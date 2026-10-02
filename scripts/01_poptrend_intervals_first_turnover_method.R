@@ -9,7 +9,7 @@ if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
-# Import all images, select desired period and remove juvenile observations
+# Import dataset of images, select desired period and remove juvenile observations
 
 export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
 
