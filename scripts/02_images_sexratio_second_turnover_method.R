@@ -17,7 +17,6 @@ if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
-
 # Import all images, select desired period and remove juvenile observations
 
 export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
@@ -50,16 +49,6 @@ lynx_R <- b %>%
 
 lynx_LR <- lynx_L %>% inner_join(lynx_R)   # 150 captured from both sides                   
 
-ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)  
-
-ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))
-
-
-
-
-
-
-
 # Minimum quantity: the highest between the number of captures from the right side and those from the left side. Here, the first ones are more
 
 ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)   # 225
@@ -69,13 +58,7 @@ ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)   #
 ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))   # 286
 
 
-
-
-
-
-
-
-# ********************** 2. intervals between sightings for each lynx 2018 - 2023 ************************
+# ********************** 2. Temporal intervals between records for each individual between 2018 and 2023 ************************
 
 b <- b %>%
   semi_join(lynx_min)
