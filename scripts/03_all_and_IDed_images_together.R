@@ -19,7 +19,7 @@ if (!require('ggthemes')) install.packages('ggthemes'); library('ggthemes')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 
-# Import all records (also not IDed images), select desired period and remove juvenile records
+# Import all records (also not IDed images), select desired period and remove juveniles
 
 export_lynxDB_allobs2 <- read.csv("data/data_for_scripts_02part3_03.csv")
 
@@ -36,19 +36,8 @@ b2_allph_10_24 <- b_allph_10_24
 
 b2_allph_10_24[, 'season'] = NA
 
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2012-05-01", ]) # 56
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2013-05-01" & b2_allph_10_24$datum_vrijeme >= "2012-05-01", ]) # 59
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2014-05-01" & b2_allph_10_24$datum_vrijeme >= "2013-05-01", ]) # 73
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2015-05-01" & b2_allph_10_24$datum_vrijeme >= "2014-05-01", ]) # 67
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2016-05-01" & b2_allph_10_24$datum_vrijeme >= "2015-05-01", ]) # 151
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2017-05-01" & b2_allph_10_24$datum_vrijeme >= "2016-05-01", ]) # 168
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2018-05-01" & b2_allph_10_24$datum_vrijeme >= "2017-05-01", ]) # 143
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2019-05-01" & b2_allph_10_24$datum_vrijeme >= "2018-05-01", ]) # 418
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2020-05-01" & b2_allph_10_24$datum_vrijeme >= "2019-05-01", ]) # 455
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2021-05-01" & b2_allph_10_24$datum_vrijeme >= "2020-05-01", ]) # 620
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2022-05-01" & b2_allph_10_24$datum_vrijeme >= "2021-05-01", ]) # 715
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2023-05-01" & b2_allph_10_24$datum_vrijeme >= "2022-05-01", ]) # 883
-
+nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2012-05-01", ])
+nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2013-05-01" & b2_allph_10_24$datum_vrijeme >= "2012-05-01", ]) # Change to check
 
 b2_allph_10_24$season <- ifelse(b2_allph_10_24$datum_vrijeme < "2012-05-01", "11/12",
                                 ifelse(b2_allph_10_24$datum_vrijeme < "2013-05-01", "12/13",
