@@ -183,13 +183,9 @@ table(ris_interval_avg_18_23$spol)
 
 # ******** 3. Quantity of images of IDed animals between 05/2010 and 04/2024 (this time not with minimum identified applied) ********
 
-# Change working directory
-
-setwd(dirname(file.choose()))
-
 # Import all records (also not IDed images)
 
-export_lynxDB_allobs <- read.csv(file = file.choose())
+export_lynxDB_allobs <- read.csv(data_for_scripts_02part3_03.csv)
 
 # Separate IDed images, select time period and remove juveniles
 
@@ -245,8 +241,10 @@ idph_10_24_plot <- ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   xlab("Season") +
   ylab("Number")
 
+# b_idph_10_24 needs to be stored to be used later, so it's already in the "data" folder
 
-# ******* 4. number of IDed animals between 05/2010 and 04/2024 (not with minimum identified lynx number) *******
+
+# ******* 4. Quantity of IDed animals between 05/2010 and 04/2024 (still not with minimum identified applied) *******
 
 b_ind_10_24 <- b
 
@@ -290,7 +288,7 @@ b_ind_10_24_grp <- b_ind_10_24 %>%
   group_by(oznaka, season) %>%
   filter(row_number(oznaka) == 1)  
 
-ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
+ind_10_24_grp_plot <- ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
   geom_line(stat = "count", linewidth = 1.5) +
   ggtitle("Number of IDed individuals by season") +
   xlab("Season") +
