@@ -19,7 +19,7 @@ if (!require('ggthemes')) install.packages('ggthemes'); library('ggthemes')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 
-# Import all records (also not IDed images), select desired period and remove juvenile observations
+# Import all records (also not IDed images), select desired period and remove juvenile records
 
 export_lynxDB_allobs2 <- read.csv("data/data_for_scripts_02part3_03.csv")
 
