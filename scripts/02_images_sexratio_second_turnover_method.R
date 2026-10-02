@@ -1,15 +1,13 @@
 
-
-
-# Script 1/3
-# Population trend, temporal intervals between camera-trap records and first turnover calculation method
+# Script 2/3
+# Images for individual identification, population abundance and sex ratio and second turnover calculation method
 
 # Load required packages
-
 
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
+
 if (!require('vistime')) install.packages('vistime'); library('vistime')
 if (!require('zoo')) install.packages('zoo'); library('zoo')
 if (!require('stringi')) install.packages('stringi'); library('stringi')
@@ -19,7 +17,6 @@ if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
-# ! Before running section 5, run all script 03 !
 
 # set working directory
 
@@ -329,6 +326,12 @@ ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
   ggtitle("Number of IDed individuals by season") +
   xlab("Season") +
   ylab("Number")
+
+
+
+# ! Before running section 5, run all script 03 !
+
+
 
 
 # ******** 5. sex ratios ********
