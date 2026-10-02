@@ -1,5 +1,11 @@
 
-# load required packages
+
+
+# Script 1/3
+# Population trend, temporal intervals between camera-trap records and first turnover calculation method
+
+# Load required packages
+
 
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
