@@ -34,10 +34,12 @@ b_allph_10_24 <- b_allph_10_24 %>%
 
 b2_allph_10_24 <- b_allph_10_24
 
+# Assign seasons
+
 b2_allph_10_24[, 'season'] = NA
 
 nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2012-05-01", ])
-nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2013-05-01" & b2_allph_10_24$datum_vrijeme >= "2012-05-01", ]) # Change to check
+nrow(b2_allph_10_24[b2_allph_10_24$datum_vrijeme < "2013-05-01" & b2_allph_10_24$datum_vrijeme >= "2012-05-01", ])   # Change season to see the quantity
 
 b2_allph_10_24$season <- ifelse(b2_allph_10_24$datum_vrijeme < "2012-05-01", "11/12",
                                 ifelse(b2_allph_10_24$datum_vrijeme < "2013-05-01", "12/13",
@@ -58,18 +60,9 @@ b2_allph_10_24$season <- ifelse(b2_allph_10_24$datum_vrijeme < "2012-05-01", "11
                                                                                         )
                                                                                  )))))))))
 
-nrow(b2_allph_10_24[b2_allph_10_24$season == "11/12",]) # 56
-nrow(b2_allph_10_24[b2_allph_10_24$season == "12/13",]) # 59
-nrow(b2_allph_10_24[b2_allph_10_24$season == "13/14",]) # 73
-nrow(b2_allph_10_24[b2_allph_10_24$season == "14/15",]) # 67
-nrow(b2_allph_10_24[b2_allph_10_24$season == "15/16",]) # 151
-nrow(b2_allph_10_24[b2_allph_10_24$season == "16/17",]) # 168
-nrow(b2_allph_10_24[b2_allph_10_24$season == "17/18",]) # 143
-nrow(b2_allph_10_24[b2_allph_10_24$season == "18/19",]) # 418
-nrow(b2_allph_10_24[b2_allph_10_24$season == "19/20",]) # 455
-nrow(b2_allph_10_24[b2_allph_10_24$season == "20/21",]) # 620
-nrow(b2_allph_10_24[b2_allph_10_24$season == "21/22",]) # 715
-nrow(b2_allph_10_24[b2_allph_10_24$season == "22/23",]) # 883
+nrow(b2_allph_10_24[b2_allph_10_24$season == "11/12",])   # Change season to see the quantity
+
+# Plot
 
 b3_allph_10_24 <- subset(b2_allph_10_24, , select = c(1,10))
 
@@ -79,7 +72,11 @@ ggplot(b3_allph_10_24, aes(x = season, group = 1)) +
   ylab("Number") +
   ggtitle("Number of photos of IDed and not IDed individuals by season")
 
-tmp <- load(file = file.choose())
+# Import IDed images
+
+tmp <- load(b_idph_10_24.RDa)
+
+# Plot of images of IDed individuals from Script 02
 
 ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   geom_line(stat = "count", linewidth = 1.5) +
@@ -87,9 +84,9 @@ ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   guides(size = "none") +
   ggtitle("Number of photos of IDed individuals by season") +
   xlab("Season") +
-  ylab("Number")              # plot of images IDed individuals from other script
+  ylab("Number") 
 
-# lines of IDed and IDed-not IDed together
+# Quantity of images of IDed individuals and of all (IDed and not) individuals together
 
 ggplot() +
   geom_line(b_idph_10_24, mapping = aes(x = season, colour = "only IDed individuals"), stat = "count", group = 1, linewidth = 1.5) +
@@ -101,3 +98,5 @@ ggplot() +
   ggtitle("Number of photos by season") +
   xlab("Season") +
   ylab("Number")
+
+# ! This plot is different to the one appearing in the paper as it refers to an earlier draft !
