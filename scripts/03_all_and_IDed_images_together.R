@@ -1,9 +1,14 @@
 
-# load required packages
+# Script 3/3
+# All images and only IDed images compared
+
+# Load required packages
 
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
+
+
 if (!require('vistime')) install.packages('vistime'); library('vistime')
 if (!require('zoo')) install.packages('zoo'); library('zoo')
 if (!require('stringi')) install.packages('stringi'); library('stringi')
