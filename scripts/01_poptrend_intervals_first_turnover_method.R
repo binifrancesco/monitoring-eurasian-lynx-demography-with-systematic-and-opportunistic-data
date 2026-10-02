@@ -8,16 +8,11 @@ if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
-# Set working directory
-setwd(dirname(file.choose()))
-
 # Import all images, select desired period and remove juvenile observations
-export_lynxDB <- read.csv(file = file.choose())
+export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
 
 export_lynxDB2 <- export_lynxDB %>%
-  mutate(
-    datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone())
-  )
+ mutate(datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone()))
 
 b_10_24 <- export_lynxDB2 %>%
   filter(`datum_vrijeme` >= "2010-05-01 00:00:00 UTC")
@@ -132,7 +127,7 @@ b_10_24_2 <- b_10_24
 
 ris_interval_11_24 <- b_10_24_2 %>%
   select ('datum_vrijeme', 'oznaka') %>% 
-  mutate(datum = as.Date(datum_vrijeme, format = "%d.%m.%Y")) %>% 
+  mutate(datum = as.Date(datum_vrijeme)) %>% 
   group_by(oznaka) %>%
   summarise(
     end = max(datum, na.rm = TRUE),
@@ -153,7 +148,7 @@ ris_interval_org_11_24 <- ris_interval_11_24 %>%
 ris_interval_every_11_24 <- b_10_24_2 %>%
   select (datum_vrijeme, oznaka) %>%
   arrange(oznaka, datum_vrijeme) %>%
-  mutate(datum = as.Date(datum_vrijeme, format = "%d.%m.%Y")) %>% 
+  mutate(datum = as.Date(datum_vrijeme)) %>% 
   group_by(oznaka) %>%
   mutate(time_interval = datum - lag(datum)) %>%
   arrange(desc(time_interval)) %>%
@@ -205,9 +200,9 @@ min(ris_interval_avg2_11_24$start)
 summary(ris_interval_avg2_11_24$real_min_age_years)
 sd(ris_interval_avg2_11_24$real_min_age_years)
 
-# Calculate turnover
+# Calculate turnover by dividing the mean abundance between 2018 and 2023 (77; see Script 02) by the average minimum age
 
-77.2 / 2.5  # 30.88
+77 / 2.5  # 30.8
 
 # Minimum age plot
 
@@ -321,12 +316,6 @@ ris_interval_avg_11_24 <- ris_interval_avg_11_24 %>%
 
 ris_interval_avg_11_24[, c(9)] <- sapply(ris_interval_avg_11_24[, c(9)], as.numeric)
 colnames(ris_interval_avg_11_24)[9] <- "max_int_between_sightings_days"
-
-# Join the two tables
-
-ris_interval_avg_once_11_24[, 'max_int_between_sightings_days'] = NA
-ris_interval_avg_all_11_24 <- rbind(ris_interval_avg_11_24, ris_interval_avg_once_11_24)
-ris_interval_avg_all_11_24 <- ris_interval_avg_all_11_24[order(ris_interval_avg_all_11_24$oznaka),]
 
 # Remove individuals recorded twice in the same day
 
