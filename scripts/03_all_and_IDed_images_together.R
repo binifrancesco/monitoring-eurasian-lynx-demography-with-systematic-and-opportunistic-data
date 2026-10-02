@@ -19,30 +19,9 @@ if (!require('ggthemes')) install.packages('ggthemes'); library('ggthemes')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 
+# Import all records (also not IDed images), select desired period and remove juvenile observations
 
-# Import all images, select desired period and remove juvenile observations
-
-export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
-
-b <- export_lynxDB2 <- export_lynxDB %>%
-  mutate(datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone()))
-
-b <- b %>%
-  filter(`datum_vrijeme` >= "2010-05-01 00:00:00 UTC")
-
-b <- b %>%
-  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
-
-
-
-
-# set working directory
-
-setwd(dirname(file.choose()))
-
-# import database of all observations (also not IDed ones)
-
-export_lynxDB_allobs2 <- read.csv(file = file.choose())
+export_lynxDB_allobs2 <- read.csv("data/data_for_scripts_02part3_03.csv")
 
 b_allph_10_24 <- export_lynxDB_allobs2 %>%
   filter(ime == 'Image') %>% 
@@ -50,14 +29,8 @@ b_allph_10_24 <- export_lynxDB_allobs2 %>%
   filter(datum_vrijeme >= "2010-05-01 00:00:00 UTC" & datum_vrijeme <= "2024-04-30 23:59:00 UTC") %>% 
   filter(duplicated(datum_vrijeme) == FALSE)
 
-min(b_allph_10_24$datum_vrijeme)
-max(b_allph_10_24$datum_vrijeme)
-
 b_allph_10_24 <- b_allph_10_24 %>%
-  filter(!grepl(('mlado'), oznaka)) %>%
-  filter(!grepl(('mladu'), oznaka)) %>%
-  filter(!grepl(('Mlado'), oznaka)) %>%
-  filter(!grepl(('Mladu'), oznaka))        # 4155
+ filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))   
 
 b2_allph_10_24 <- b_allph_10_24
 
