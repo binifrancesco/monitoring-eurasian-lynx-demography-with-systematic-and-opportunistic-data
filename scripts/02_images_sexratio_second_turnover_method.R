@@ -297,10 +297,7 @@ ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
   ylab("Number")
 
 
-
-# ! Before running section 5, run all script 03 !
-
-
+# ! Before running section 5, run all Script 03 !
 
 
 # ******** 5. sex ratios ********
