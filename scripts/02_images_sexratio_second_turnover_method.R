@@ -32,25 +32,47 @@ b <- b %>%
   filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
 
-# *************************  1. minimum and maximum numbers  *************************
+# *************************  1. Minimum and maximum numbers of identified lynx  *************************
+
+# List of individuals depending on which side they are captured
 
 lynx_L <- b %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>%
   summarize(slikana_strana_zivotinje = first(slikana_strana_zivotinje)) %>% 
   rename(slikana_strana_zivotinje3=slikana_strana_zivotinje) %>%
-  filter(slikana_strana_zivotinje3 == 'lijeva')                           
+  filter(slikana_strana_zivotinje3 == 'lijeva')   # 211 captured from the right side                        
 
 lynx_R <- b %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>% 
   summarize(slikana_strana_zivotinje = first(slikana_strana_zivotinje)) %>% 
   rename(slikana_strana_zivotinje2=slikana_strana_zivotinje) %>% 
-  filter(slikana_strana_zivotinje2 == 'desna')                          
+  filter(slikana_strana_zivotinje2 == 'desna')   # 225 captured from the right side                       
 
-lynx_LR <- lynx_L %>% inner_join(lynx_R)                      
+lynx_LR <- lynx_L %>% inner_join(lynx_R)   # 150 captured from both sides                   
 
 ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)  
 
 ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))
+
+
+
+
+
+
+
+# Minimum quantity: the highest between the number of captures from the right side and those from the left side. Here, the first ones are more
+
+ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)   # 225
+
+# Maximum lynx number: case in which all the individuals captured from the left side are different than those captured from the right side
+
+ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))   # 286
+
+
+
+
+
+
 
 
 # ********************** 2. intervals between sightings for each lynx 2018 - 2023 ************************
