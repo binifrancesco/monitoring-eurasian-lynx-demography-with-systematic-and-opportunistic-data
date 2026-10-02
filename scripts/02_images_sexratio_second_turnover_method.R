@@ -23,18 +23,13 @@ if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
 
 b <- export_lynxDB2 <- export_lynxDB %>%
-  mutate(
-    datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone())
-  )
+  mutate(datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone()))
 
 b <- b %>%
   filter(`datum_vrijeme` >= "2010-05-01 00:00:00 UTC")
 
 b <- b %>%
-  filter(!grepl(('mlado'), oznaka)) %>%
-  filter(!grepl(('mladu'), oznaka)) %>%
-  filter(!grepl(('Mlado'), oznaka)) %>%
-  filter(!grepl(('Mladu'), oznaka))
+  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
 
 # *************************  1. minimum and maximum numbers  *************************
