@@ -7,17 +7,7 @@
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
-
-
-if (!require('vistime')) install.packages('vistime'); library('vistime')
-if (!require('zoo')) install.packages('zoo'); library('zoo')
-if (!require('stringi')) install.packages('stringi'); library('stringi')
-if (!require('fuzzyjoin')) install.packages('fuzzyjoin'); library('fuzzyjoin')
-if (!require('sf')) install.packages('sf'); library('sf')
-if (!require('plotly')) install.packages('plotly'); library('plotly')
-if (!require('ggthemes')) install.packages('ggthemes'); library('ggthemes')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
-
 
 # Import all records (also not IDed images), select desired period and remove juveniles
 
