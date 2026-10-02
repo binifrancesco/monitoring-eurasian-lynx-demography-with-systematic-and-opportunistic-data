@@ -64,30 +64,29 @@ b <- b %>%
   semi_join(lynx_min)
 
 b_18_23 <- b %>%
-  filter(`datum_vrijeme` >= "2018-05-01 00:00:00 UTC" & `datum_vrijeme` <= "2023-04-30 23:59:00 UTC")
+  filter(`datum_vrijeme` >= "2018-05-01 00:00:00 UTC" & `datum_vrijeme` <= "2023-04-30 23:59:00 UTC")   # now 201 individuals
 
-# need to recreate ris_interval e ris_interval_org between 05/2018 and 04/2023
+# Recreate ris_interval and ris_interval_org between 05/2018 and 04/2023
 
-# table with the interval between first and last sighting for each lynx
+# Table with the interval between first and last record for each animal
 
 ris_interval_18_23 <- b_18_23 %>% select ('datum_vrijeme', 'oznaka') %>% 
   mutate(datum = as.Date(datum_vrijeme, format = "%d.%m.%Y")) %>% 
   group_by(oznaka) %>%
   summarise(
-    end = max(datum, na.rm = T),
-    start = min(datum, na.rm = T)
+    end = max(datum, na.rm = TRUE),
+    start = min(datum, na.rm = TRUE)
   ) %>%
   arrange(oznaka) %>% 
   mutate(sighting_interval = interval(start, end))
 
-# add the minimum age (days)
+# Add minimum age (days)
 
 ris_interval_org_18_23 <- ris_interval_18_23 %>% 
   select(oznaka, start, end) %>% 
   mutate(min_starost_zivotinje = end-start)         
 
-# table with intervals (days) between different sightings for each lynx within the total capture interval for any given lynx
-# and dates of sightings
+# Table with temporal intervals between different records for each individual + date of each record
 
 ris_interval_every_18_23 <- b_18_23 %>% select (datum_vrijeme, oznaka) %>%
   arrange(oznaka, datum_vrijeme) %>%
@@ -95,31 +94,30 @@ ris_interval_every_18_23 <- b_18_23 %>% select (datum_vrijeme, oznaka) %>%
   group_by(oznaka) %>%
   mutate(time_interval = datum - lag(datum)) %>%
   arrange(desc(time_interval)) %>%
-  select(oznaka, time_interval, datum)    # NAs in time_interval column: first sighting of individuals and individuals seen
-                                          # once
+  select(oznaka, time_interval, datum)
+
+# Joins start and end date of the capture interval and minimum age for each individual
 
 ris_interval_every_18_23 <- ris_interval_every_18_23 %>% 
-  left_join(ris_interval_org_18_23, by = "oznaka")                 # joins start and end date of the capture interval and the
-                                                                   # minimum age for each lynx in days
-
-# reorganizing
+  left_join(ris_interval_org_18_23, by = "oznaka")                 
+                                                                   
+# Reorganize
 
 ris_interval_every_18_23 <- ris_interval_every_18_23[,c(1,4,3,5,2,6)]
 colnames(ris_interval_every_18_23)[3] <- "middle_sightings"
 colnames(ris_interval_every_18_23)[5] <- "interval_between_sightings"
-colnames(ris_interval_every_18_23)[6] <- "total_capture_interval_(min_age)"   # table with date of first, middle and last
-                                                                              # sightings, intervals between sightings and
-                                                                              # total capture interval (minimum age) in days
+colnames(ris_interval_every_18_23)[6] <- "total_capture_interval_(min_age)"
+
+# Table with minimum age of each individual (days and years)
 
 ris_interval_org_18_23 %>% 
   group_by(oznaka) %>% 
   summarise(min_age = max(min_starost_zivotinje)) %>%
   mutate(min_age_year = min_age/365) %>% 
   arrange(desc(min_age)) %>% 
-  write_xlsx(., "min_lynx_age_new_18_23.xls")   # table with each lynx's minimum age (days and years)
+  write_xlsx(., "min_lynx_age_new_18_23.xls")
 
-
-# table only with age in years
+# Just in years
 
 min_lynx_age_new_18_23 <- ris_interval_org_18_23 %>% 
   group_by(oznaka) %>% 
@@ -130,7 +128,7 @@ min_lynx_age_new_18_23 <- ris_interval_org_18_23 %>%
 min_lynx_age_new_18_23 <- subset(min_lynx_age_new_18_23, , select = c(oznaka, min_age_year))
 min_lynx_age_new_18_23[] <- lapply(min_lynx_age_new_18_23, gsub, pattern = ' days', replacement = ' ')   
 
-# table with date of first and last sighting, total capture interval, minimum age (years)
+# Table with date of first and last record, total capture interval and minimum age (years)
 
 ris_interval_avg_18_23 <- ris_interval_org_18_23
 colnames(ris_interval_avg_18_23)[4] <- 'total_capture_interval_(min_age)'
@@ -138,27 +136,32 @@ ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>%
   left_join(min_lynx_age_new_18_23, by = "oznaka") 
 colnames(ris_interval_avg_18_23)[5] <- 'min_age_years'               
 
-# add the average interval between sightings for each lynx
+# Add the average interval between sightings for each lynx
+
+# Separate table with date of each record and interval between records
 
 ris_interval_avg2_18_23 <- subset(ris_interval_every_18_23, , select = -c(6))
-ris_interval_avg2_18_23 <- na.omit(ris_interval_avg2_18_23)                       # separate table with date of first, middle and last
-                                                                                  # sightings and interval between sightings (no NAs)
+ris_interval_avg2_18_23 <- na.omit(ris_interval_avg2_18_23)  
 
+# Table with average interval between records (days) for each individual
+                                                                          
 avg_int_18_23 <- aggregate(ris_interval_avg2_18_23[, 5], list(ris_interval_avg2_18_23$oznaka), mean)
 colnames(avg_int_18_23)[1] <- "oznaka"
-colnames(avg_int_18_23)[2] <- "avg_int_between_sightings"                         # table with average interval between sightings (days) for each lynx
+colnames(avg_int_18_23)[2] <- "avg_int_between_sightings" 
+
+# Join the 2 previous tables
 
 ris_interval_avg2_18_23 <- ris_interval_avg2_18_23 %>% 
-  left_join(avg_int_18_23, by = "oznaka")                                         # join the 2 previous tables
+  left_join(avg_int_18_23, by = "oznaka")                                         
+
+# Table with date of first and last record, total capture interval, minimum age (years) and average interval between records (days)
 
 ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>% 
-  left_join(avg_int_18_23, by = "oznaka")                                         # table with date of first and last sightings, total capture
-                                                                                  # interval, minimum age (years) and average interval between
-                                                                                  # sightings (days)
+  left_join(avg_int_18_23, by = "oznaka")                                  
 
 ris_interval_avg_18_23[, c(5:6)] <- sapply(ris_interval_avg_18_23[, c(5:6)], as.numeric)      
 
-# create and add a column with number of sightings for each lynx
+# Add number of records for each individual
 
 n_sightings_18_23 <- ris_interval_every_18_23 %>% count(oznaka)
 ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>% 
@@ -166,7 +169,7 @@ ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>%
 colnames(ris_interval_avg_18_23)[7] <- "n_sightings"
 ris_interval_avg_18_23 <- ris_interval_avg_18_23[,c(1,2,3,4,5,7,6)]
 
-# add column with individuals' sex
+# Add individuals' sex
 
 ris_spol_18_23 <- subset(b_18_23, , select = c(oznaka, spol))
 ris_spol_18_23 <- ris_spol_18_23 %>%
@@ -178,17 +181,19 @@ ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>%
 table(ris_interval_avg_18_23$spol)
 
 
-# ******** 3. number of images of IDed animals between 05/2010 and 04/2024 (not with minimum identified lynx number) ********
+# ******** 3. Quantity of images of IDed animals between 05/2010 and 04/2024 (this time not with minimum identified applied) ********
 
-# change working directory
+# Change working directory
 
 setwd(dirname(file.choose()))
 
-# import database of all observations (also not IDed)
+# Import all records (also not IDed images)
 
 export_lynxDB_allobs <- read.csv(file = file.choose())
 
-export_lynxDB_idobs <- export_lynxDB_allobs[-which(export_lynxDB_allobs$oznaka == ""), ]  # only IDed obs
+# Separate IDed images, select time period and remove juveniles
+
+export_lynxDB_idobs <- export_lynxDB_allobs[-which(export_lynxDB_allobs$oznaka == ""), ]
 
 b_idph_10_24 <- export_lynxDB_idobs %>%
   filter(ime == 'Image') %>%
@@ -196,14 +201,10 @@ b_idph_10_24 <- export_lynxDB_idobs %>%
   filter(datum_vrijeme >= "2010-05-01 00:00:00 UTC" & datum_vrijeme <= "2024-04-30 23:59:00 UTC") %>% 
   filter(duplicated(datum_vrijeme) == FALSE)  
 
-min(b_idph_10_24$datum_vrijeme)
-max(b_idph_10_24$datum_vrijeme)
-
 b_idph_10_24 <- b_idph_10_24 %>%
-  filter(!grepl(('mlado'), oznaka)) %>%
-  filter(!grepl(('mladu'), oznaka)) %>%
-  filter(!grepl(('Mlado'), oznaka)) %>%
-  filter(!grepl(('Mladu'), oznaka))        # 2740 (without kittens)
+  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))       
+
+# Assign seasons
 
 b_idph_10_24[, 'season'] = NA
 
@@ -234,21 +235,11 @@ b_idph_10_24$season <- ifelse(b_idph_10_24$datum_vrijeme < "2012-05-01", "11/12"
                               )
 )
 
-nrow(b_idph_10_24[b_idph_10_24$season == "11/12",])  # 53
-nrow(b_idph_10_24[b_idph_10_24$season == "12/13",])  # 43
-nrow(b_idph_10_24[b_idph_10_24$season == "13/14",])  # 47
-nrow(b_idph_10_24[b_idph_10_24$season == "14/15",])  # 51
-nrow(b_idph_10_24[b_idph_10_24$season == "15/16",])  # 41
-nrow(b_idph_10_24[b_idph_10_24$season == "16/17",])  # 43
-nrow(b_idph_10_24[b_idph_10_24$season == "17/18",])  # 38
-nrow(b_idph_10_24[b_idph_10_24$season == "18/19",])  # 282
-nrow(b_idph_10_24[b_idph_10_24$season == "19/20",])  # 357
-nrow(b_idph_10_24[b_idph_10_24$season == "20/21",])  # 472
-nrow(b_idph_10_24[b_idph_10_24$season == "21/22",])  # 570
-nrow(b_idph_10_24[b_idph_10_24$season == "22/23",])  # 583
-nrow(b_idph_10_24[b_idph_10_24$season == "23/24",])  # 160
+nrow(b_idph_10_24[b_idph_10_24$season == "11/12",])   # Change season to see the quantity
 
-ggplot(b_idph_10_24, aes(x = season, group = 1)) +
+# Plot
+
+idph_10_24_plot <- ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   geom_line(stat = "count", linewidth = 1.5) +
   ggtitle("Number of photos of IDed individuals by season") +
   xlab("Season") +
@@ -259,16 +250,8 @@ ggplot(b_idph_10_24, aes(x = season, group = 1)) +
 
 b_ind_10_24 <- b
 
-length(unique(b_ind_10_24$oznaka))  # 225
-
-min(b_ind_10_24$datum_vrijeme)
-max(b_ind_10_24$datum_vrijeme)
-
 b_ind_10_24 <- b_ind_10_24 %>%
-  filter(!grepl(('mlado'), oznaka)) %>%
-  filter(!grepl(('mladu'), oznaka)) %>%
-  filter(!grepl(('Mlado'), oznaka)) %>%
-  filter(!grepl(('Mladu'), oznaka))        # 2931 (without kittens)
+  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
 b_ind_10_24[, 'season'] = NA
 
@@ -299,19 +282,9 @@ b_ind_10_24$season <- ifelse(b_ind_10_24$datum_vrijeme < "2012-05-01", "11/12",
                              )
 )
 
-nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])  # 19
-nrow(b_ind_10_24[b_ind_10_24$season == "12/13",])  # 11
-nrow(b_ind_10_24[b_ind_10_24$season == "13/14",])  # 6
-nrow(b_ind_10_24[b_ind_10_24$season == "14/15",])  # 14
-nrow(b_ind_10_24[b_ind_10_24$season == "15/16",])  # 31
-nrow(b_ind_10_24[b_ind_10_24$season == "16/17",])  # 41
-nrow(b_ind_10_24[b_ind_10_24$season == "17/18",])  # 38
-nrow(b_ind_10_24[b_ind_10_24$season == "18/19",])  # 288
-nrow(b_ind_10_24[b_ind_10_24$season == "19/20",])  # 411
-nrow(b_ind_10_24[b_ind_10_24$season == "20/21",])  # 607
-nrow(b_ind_10_24[b_ind_10_24$season == "21/22",])  # 714
-nrow(b_ind_10_24[b_ind_10_24$season == "22/23",])  # 653
-nrow(b_ind_10_24[b_ind_10_24$season == "23/24",])  # 98
+nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])  # Change season to see the quantity
+
+# Group
 
 b_ind_10_24_grp <- b_ind_10_24 %>%
   group_by(oznaka, season) %>%
