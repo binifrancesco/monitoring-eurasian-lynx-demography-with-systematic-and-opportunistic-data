@@ -18,6 +18,24 @@ if (!require('plotly')) install.packages('plotly'); library('plotly')
 if (!require('ggthemes')) install.packages('ggthemes'); library('ggthemes')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
+
+
+# Import all images, select desired period and remove juvenile observations
+
+export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
+
+b <- export_lynxDB2 <- export_lynxDB %>%
+  mutate(datum_vrijeme = ymd_hms(`datum_vrijeme`, tz = Sys.timezone()))
+
+b <- b %>%
+  filter(`datum_vrijeme` >= "2010-05-01 00:00:00 UTC")
+
+b <- b %>%
+  filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
+
+
+
+
 # set working directory
 
 setwd(dirname(file.choose()))
