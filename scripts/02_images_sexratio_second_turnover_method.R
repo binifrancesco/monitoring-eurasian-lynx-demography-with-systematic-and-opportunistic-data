@@ -18,13 +18,9 @@ if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 
-# set working directory
+# Import all images, select desired period and remove juvenile observations
 
-setwd(dirname(file.choose()))
-
-# import all images, select desired period and remove kitten observations
-
-export_lynxDB <- read.csv(file = file.choose())
+export_lynxDB <- read.csv("data/data_for_scripts_01_02.csv")
 
 b <- export_lynxDB2 <- export_lynxDB %>%
   mutate(
