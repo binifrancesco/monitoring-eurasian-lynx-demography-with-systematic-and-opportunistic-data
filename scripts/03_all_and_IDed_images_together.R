@@ -10,7 +10,7 @@ if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 # Import all records (also not IDed images), select desired period and remove juveniles
 
-export_lynxDB_allobs2 <- read.csv("data/data_for_scripts_02part3_03.csv")
+export_lynxDB_allobs2 <- read.csv("data/data_for_scripts_02section3_03.csv")
 
 b_allph_10_24 <- export_lynxDB_allobs2 %>%
   filter(ime == 'Image') %>% 
