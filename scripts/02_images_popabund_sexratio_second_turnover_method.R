@@ -173,7 +173,7 @@ table(ris_interval_avg_18_23$spol)
 
 # Import all records (also not IDed images)
 
-export_lynxDB_allobs <- read.csv("data/data_for_scripts_02part3_03.csv")
+export_lynxDB_allobs <- read.csv("data/data_for_scripts_02section3_03.csv")
 
 # Separate IDed images, select time period and remove juveniles
 
