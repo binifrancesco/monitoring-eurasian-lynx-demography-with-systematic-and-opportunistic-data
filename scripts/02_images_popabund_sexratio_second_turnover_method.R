@@ -7,13 +7,7 @@
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
-
-if (!require('vistime')) install.packages('vistime'); library('vistime')
-if (!require('zoo')) install.packages('zoo'); library('zoo')
-if (!require('stringi')) install.packages('stringi'); library('stringi')
-if (!require('fuzzyjoin')) install.packages('fuzzyjoin'); library('fuzzyjoin')
-if (!require('sf')) install.packages('sf'); library('sf')
-if (!require('plotly')) install.packages('plotly'); library('plotly')
+if (!require('readxl')) install.packages('readxl'); library('readxl')
 if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
@@ -31,7 +25,7 @@ b <- b %>%
   filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
 
-# *************************  1. Minimum and maximum numbers of identified lynx  *************************
+# *************************  1. Minimum and maximum quantities of identified lynx  *************************
 
 # List of individuals depending on which side they are captured
 
@@ -39,7 +33,7 @@ lynx_L <- b %>%
   group_by(oznaka, slikana_strana_zivotinje) %>%
   summarize(slikana_strana_zivotinje = first(slikana_strana_zivotinje)) %>% 
   rename(slikana_strana_zivotinje3=slikana_strana_zivotinje) %>%
-  filter(slikana_strana_zivotinje3 == 'lijeva')   # 211 captured from the right side                        
+  filter(slikana_strana_zivotinje3 == 'lijeva')   # 211 captured from the left side                        
 
 lynx_R <- b %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>% 
@@ -280,7 +274,7 @@ b_ind_10_24$season <- ifelse(b_ind_10_24$datum_vrijeme < "2012-05-01", "11/12",
                              )
 )
 
-nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])  # Change season to see the quantity
+nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])   # Change season to see the quantity
 
 # Group
 
@@ -298,16 +292,18 @@ ind_10_24_grp_plot <- ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
 # ! Before running section 5, run all Script 03 !
 
 
-# ******** 5. sex ratios ********
+# ******** 5. Population abundance and sex ratio between 2018 and 2023 ********
+
+# 
 
 ris_interval_every2_18_23 <- ris_interval_every_18_23 %>% 
   left_join(ris_spol_18_23, by = "oznaka")
 
 length(unique(ris_interval_every_18_23$oznaka)) 
 
-
 ris_interval_every2_18_23 <- subset(ris_interval_every2_18_23, , select = c(1,3,7))
 
+# Assign seasons
 
 ris_interval_every2_18_23[, 'season'] = NA
 
@@ -359,20 +355,11 @@ ggplot(ris_interval_every3_each_18_23, aes(x = season, fill = Sex)) +
   )
 
 
-# ******** 6. second turnover method ********
+# ******** 6. Second turnover calculation method ********
 
-if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
-if (!require('writexl')) install.packages('writexl'); library('writexl')
-if (!require('readxl')) install.packages('readxl'); library('readxl')
-if (!require('vistime')) install.packages('vistime'); library('vistime')
+nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "18/19",])   # Change season to see the quantity
 
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "18/19",]) 
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "19/20",])  
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "20/21",])  
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "21/22",])  
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "22/23",])  
-
-# grouped by sex
+# Check sex groups by season and subset
 
 inds_18_19 <- b_ind_10_24_grp %>%
   filter(season == "18/19")
@@ -404,6 +391,8 @@ inds_21_22_names <- subset(inds_21_22, , select = c(2))
 
 inds_22_23_names <- subset(inds_22_23, , select = c(2))
 
+# Table of all records of all individuals
+
 ris_18_23 <- b_18_23
 
 ris_org_18_23 <- ris_18_23 %>%
@@ -412,11 +401,9 @@ ris_org_18_23 <- ris_18_23 %>%
   select(-datum_vrijeme) %>% 
   arrange(ime)
 
-length(unique(ris_org_18_23$ime))
-min(ris_org_18_23$datum)
-max(ris_org_18_23$datum)
-
 ris_org_18_23 <- subset(ris_org_18_23, , select = -c(1, 3, 5:6))  
+
+# Table with first and last record and sex for all individuals
 
 ris_startend_18_23 <- ris_org_18_23 %>%
   group_by(ime) %>%
@@ -433,14 +420,16 @@ spol_18_23 <- spol_18_23 %>%
 ris_startend_18_23 <- ris_startend_18_23 %>% 
   left_join(spol_18_23, by = "ime")
 
-ris_startend_18_23 <- as.data.frame(ris_startend_18_23)      # table with first and last sighting and sex for the 201 individuals
+ris_startend_18_23 <- as.data.frame(ris_startend_18_23)
 
-# defining residents and non-residents
+# Define residents and non-residents
+
+# Table with all record in date format
 
 ris_rnr_18_23 <- ris_org_18_23 %>% 
   mutate(datum = as_date(datum))
 
-class(ris_rnr_18_23$datum)           # table with all sightings in date format
+# Table with start and end of each capture interval and date of each record
 
 ris_rnr2_18_23 <- ris_rnr_18_23 %>% 
   group_by(ime) %>%
@@ -456,7 +445,9 @@ ris_rnr2_18_23 <- ris_rnr2_18_23 %>%
 
 ris_rnr2_18_23 <- ris_rnr2_18_23[,c(1,3,2,4,5,6)]
 
-length(unique(ris_rnr2_18_23$ime))        # table with start and end of each capture interval and date of each sighting
+length(unique(ris_rnr2_18_23$ime))
+
+# Same table as ris_rnr2_18_23 but this time grouped by individual and with temporal intervals (days)
 
 ris_rnr3_18_23 <- subset(ris_rnr2_18_23, , select = -c(6))
 
@@ -470,13 +461,15 @@ ris_rnr_intervals_18_23 <- ris_rnr4_18_23 %>%
 ris_rnr_intervals_18_23 <- subset(ris_rnr_intervals_18_23, , select = -c(2:3))
 
 ris_rnr4_18_23 <- ris_rnr4_18_23 %>% 
-  left_join(ris_rnr_intervals_18_23, by = "ime")    # same table as rnr2 but grouped by individual and with intervals in days
+  left_join(ris_rnr_intervals_18_23, by = "ime") 
 
 ris_rnr4_18_23 <- ris_rnr4_18_23 %>%
   mutate(interval = as.numeric(interval))
 
-table(ris_rnr4_18_23$spol)
+table(ris_rnr4_18_23$spol)   # 55 males, 90 unknown and 56 females should be obtained here
 
+# Define as non-residents the individuals with a total capture interval equal or shorter than
+# 30 days, and as residents all others
 
 ris_rnr5_18_23 <- ifelse(ris_rnr4_18_23$interval <= 30, "non res", "res")
 ris_rnr5_18_23 <- as.data.frame(ris_rnr5_18_23)
@@ -484,10 +477,10 @@ ris_rnr5_18_23 <- as.data.frame(ris_rnr5_18_23)
 ris_rnr6_18_23 <- cbind(ris_rnr4_18_23, ris_rnr5_18_23)
 
 table(ris_rnr6_18_23$ris_rnr5_18_23)
-table(ris_rnr6_18_23$ris_rnr5_18_23, ris_rnr6_18_23$spol)    # 134 res: 44 M, 46 unknown, 44 Z
-                                                             # 67 non res: 11 M, 44 unknown, 12 Z
+table(ris_rnr6_18_23$ris_rnr5_18_23, ris_rnr6_18_23$spol)   # 67 non-residents (11 males, 44 unknown, 12 females) and
+                                                            # 134 residents (44 males, 46 unknown, 44 females) should be obtained here
 
-# removing non residents
+# Remove non-residents
 
 cat <- subset(ris_rnr6_18_23, , select = -c(2:4,6))
 
@@ -496,41 +489,41 @@ colnames(cat)[1] <- "oznaka"
 inds_18_19_names_cat <- inds_18_19_names %>%
   left_join(cat, by = "oznaka")
 inds_18_19_names_cat_res <- inds_18_19_names_cat %>%
-  filter(ris_rnr5_18_23 == "res")                       # 47
+  filter(ris_rnr5_18_23 == "res")                       # 47 individuals should be obtained here
 
 inds_19_20_names_cat <- inds_19_20_names %>%
   left_join(cat, by = "oznaka")
 inds_19_20_names_cat_res <- inds_19_20_names_cat %>%
-  filter(ris_rnr5_18_23 == "res")                       # 61
+  filter(ris_rnr5_18_23 == "res")                       # 61 individuals
 
 inds_20_21_names_cat <- inds_20_21_names %>%
   left_join(cat, by = "oznaka")
 inds_20_21_names_cat_res <- inds_20_21_names_cat %>%
-  filter(ris_rnr5_18_23 == "res")                       # 74
+  filter(ris_rnr5_18_23 == "res")                       # 74 individuals
 
 inds_21_22_names_cat <- inds_21_22_names %>%
   left_join(cat, by = "oznaka")
 inds_21_22_names_cat_res <- inds_21_22_names_cat %>%
-  filter(ris_rnr5_18_23 == "res")                       # 64
+  filter(ris_rnr5_18_23 == "res")                       # 64 individuals
 
 inds_22_23_names_cat <- inds_22_23_names %>%
   left_join(cat, by = "oznaka")
 inds_22_23_names_cat_res <- inds_22_23_names_cat %>%
-  filter(ris_rnr5_18_23 == "res")                       # 72
+  filter(ris_rnr5_18_23 == "res")                       # 72 individuals
 
+# Differences between seasons
 
+diff1819_1920_res <- setdiff(inds_18_19_names_cat_res, inds_19_20_names_cat_res)   # 16 individuals
+1600/47   # 34.04 %
 
-diff1819_1920_res <- setdiff(inds_18_19_names_cat_res, inds_19_20_names_cat_res)  # 16
-1600/47  # 34.04 %
+diff1920_2021_res <- setdiff(inds_19_20_names_cat_res, inds_20_21_names_cat_res)   # 16 individuals
+1600/61   # 26.22 %
 
-diff1920_2021_res <- setdiff(inds_19_20_names_cat_res, inds_20_21_names_cat_res)  # 16
-1600/61  # 26.22 %
+diff2021_2122_res <- setdiff(inds_20_21_names_cat_res, inds_21_22_names_cat_res)   # 29 individuals
+2900/74   # 39.18 %
 
-diff2021_2122_res <- setdiff(inds_20_21_names_cat_res, inds_21_22_names_cat_res)  # 29
-2900/74  # 39.18 %
-
-diff2122_2223_res <- setdiff(inds_21_22_names_cat_res, inds_22_23_names_cat_res)  # 16
-1600/64  # 25 %
+diff2122_2223_res <- setdiff(inds_21_22_names_cat_res, inds_22_23_names_cat_res)   # 16 individuals
+1600/64   # 25 %
 
 season_diff_res <- c("18/19 - 19/20", "19/20 - 20/21", "20/21 - 21/22", "21/22 - 22/23")
 rate_res <- c("34.04", "26.22", "39.18", "25")
