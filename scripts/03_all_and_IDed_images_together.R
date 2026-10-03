@@ -73,7 +73,7 @@ idph_10_24_plot <- ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   xlab("Season") +
   ylab("Number") 
 
-# Quantity of images of IDed individuals and of all (IDed and not) individuals together
+# Plot of comparison quantity of images of IDed individuals - of all (IDed and not) individuals
 
 idph_allph_10_24_plot <- ggplot() +
   geom_line(b_idph_10_24, mapping = aes(x = season, colour = "only IDed individuals"), stat = "count", group = 1, linewidth = 1.5) +
