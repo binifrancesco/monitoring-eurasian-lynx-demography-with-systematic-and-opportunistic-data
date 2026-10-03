@@ -64,7 +64,8 @@ b_18_23 <- b %>%
 
 # Table with the interval between first and last record for each animal
 
-ris_interval_18_23 <- b_18_23 %>% select ('datum_vrijeme', 'oznaka') %>% 
+ris_interval_18_23 <- b_18_23 %>%
+  select ('datum_vrijeme', 'oznaka') %>% 
   mutate(datum = as.Date(datum_vrijeme, format = "%d.%m.%Y")) %>% 
   group_by(oznaka) %>%
   summarise(
@@ -82,7 +83,8 @@ ris_interval_org_18_23 <- ris_interval_18_23 %>%
 
 # Table with temporal intervals between different records for each individual + date of each record
 
-ris_interval_every_18_23 <- b_18_23 %>% select (datum_vrijeme, oznaka) %>%
+ris_interval_every_18_23 <- b_18_23 %>%
+  select (datum_vrijeme, oznaka) %>%
   arrange(oznaka, datum_vrijeme) %>%
   mutate(datum = as.Date(datum_vrijeme, format = "%d.%m.%Y")) %>% 
   group_by(oznaka) %>%
@@ -104,20 +106,14 @@ colnames(ris_interval_every_18_23)[6] <- "total_capture_interval_(min_age)"
 
 # Table with minimum age of each individual (days and years)
 
-ris_interval_org_18_23 %>% 
-  group_by(oznaka) %>% 
-  summarise(min_age = max(min_starost_zivotinje)) %>%
-  mutate(min_age_year = min_age/365) %>% 
-  arrange(desc(min_age)) %>% 
-  write_xlsx(., "min_lynx_age_new_18_23.xls")
-
-# Just in years
-
 min_lynx_age_new_18_23 <- ris_interval_org_18_23 %>% 
   group_by(oznaka) %>% 
   summarise(min_age = max(min_starost_zivotinje)) %>%
   mutate(min_age_year = min_age/365) %>% 
-  arrange(desc(min_age))
+  arrange(desc(min_age)) %>% 
+  write_xlsx(., "min_lynx_age_new_18_23.xlsx")
+
+# Keep only years
 
 min_lynx_age_new_18_23 <- subset(min_lynx_age_new_18_23, , select = c(oznaka, min_age_year))
 min_lynx_age_new_18_23[] <- lapply(min_lynx_age_new_18_23, gsub, pattern = ' days', replacement = ' ')   
@@ -130,7 +126,7 @@ ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>%
   left_join(min_lynx_age_new_18_23, by = "oznaka") 
 colnames(ris_interval_avg_18_23)[5] <- 'min_age_years'               
 
-# Add the average interval between sightings for each lynx
+# Add the average interval between records for each lynx
 
 # Separate table with date of each record and interval between records
 
@@ -179,7 +175,7 @@ table(ris_interval_avg_18_23$spol)
 
 # Import all records (also not IDed images)
 
-export_lynxDB_allobs <- read.csv(data_for_scripts_02part3_03.csv)
+export_lynxDB_allobs <- read.csv("data/data_for_scripts_02part3_03.csv")
 
 # Separate IDed images, select time period and remove juveniles
 
@@ -196,36 +192,26 @@ b_idph_10_24 <- b_idph_10_24 %>%
 
 # Assign seasons
 
-b_idph_10_24[, 'season'] = NA
+b_idph_10_24 <- b_idph_10_24 %>%
+  mutate(
+    season = case_when(
+      datum_vrijeme < "2012-05-01" ~ "11/12",
+      datum_vrijeme < "2013-05-01" ~ "12/13",
+      datum_vrijeme < "2014-05-01" ~ "13/14",
+      datum_vrijeme < "2015-05-01" ~ "14/15",
+      datum_vrijeme < "2016-05-01" ~ "15/16",
+      datum_vrijeme < "2017-05-01" ~ "16/17",
+      datum_vrijeme < "2018-05-01" ~ "17/18",
+      datum_vrijeme < "2019-05-01" ~ "18/19",
+      datum_vrijeme < "2020-05-01" ~ "19/20",
+      datum_vrijeme < "2021-05-01" ~ "20/21",
+      datum_vrijeme < "2022-05-01" ~ "21/22",
+      datum_vrijeme < "2023-05-01" ~ "22/23",
+      datum_vrijeme < "2024-05-01" ~ "23/24"
+    )
+  )
 
-b_idph_10_24$season <- ifelse(b_idph_10_24$datum_vrijeme < "2012-05-01", "11/12",
-                              ifelse(b_idph_10_24$datum_vrijeme < "2013-05-01", "12/13",
-                                     ifelse(b_idph_10_24$datum_vrijeme < "2014-05-01", "13/14",
-                                            ifelse(b_idph_10_24$datum_vrijeme < "2015-05-01", "14/15",
-                                                   ifelse(b_idph_10_24$datum_vrijeme < "2016-05-01", "15/16",
-                                                          ifelse(b_idph_10_24$datum_vrijeme < "2017-05-01", "16/17",
-                                                                 ifelse(b_idph_10_24$datum_vrijeme < "2018-05-01", "17/18",
-                                                                        ifelse(b_idph_10_24$datum_vrijeme < "2019-05-01", "18/19",
-                                                                               ifelse(b_idph_10_24$datum_vrijeme < "2020-05-01", "19/20",
-                                                                                      ifelse(b_idph_10_24$datum_vrijeme < "2021-05-01", "20/21",
-                                                                                             ifelse(b_idph_10_24$datum_vrijeme < "2022-05-01", "21/22",
-                                                                                                    ifelse(b_idph_10_24$datum_vrijeme < "2023-05-01", "22/23",
-                                                                                                           ifelse(b_idph_10_24$datum_vrijeme < "2024-05-01", "23/24",
-                                                                                                           )
-                                                                                                    )
-                                                                                             )
-                                                                                      )
-                                                                               )
-                                                                        )
-                                                                 )
-                                                          )
-                                                   )
-                                            )
-                                     )
-                              )
-)
-
-nrow(b_idph_10_24[b_idph_10_24$season == "11/12",])   # Change season to see the quantity
+nrow(b_idph_10_24[b_idph_10_24$season == "11/12",])   # Check quantity for a given season
 
 # Plot
 
@@ -245,36 +231,28 @@ b_ind_10_24 <- b
 b_ind_10_24 <- b_ind_10_24 %>%
   filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
-b_ind_10_24[, 'season'] = NA
+# Assign seasons
 
-b_ind_10_24$season <- ifelse(b_ind_10_24$datum_vrijeme < "2012-05-01", "11/12",
-                             ifelse(b_ind_10_24$datum_vrijeme < "2013-05-01", "12/13",
-                                    ifelse(b_ind_10_24$datum_vrijeme < "2014-05-01", "13/14",
-                                           ifelse(b_ind_10_24$datum_vrijeme < "2015-05-01", "14/15",
-                                                  ifelse(b_ind_10_24$datum_vrijeme < "2016-05-01", "15/16",
-                                                         ifelse(b_ind_10_24$datum_vrijeme < "2017-05-01", "16/17",
-                                                                ifelse(b_ind_10_24$datum_vrijeme < "2018-05-01", "17/18",
-                                                                       ifelse(b_ind_10_24$datum_vrijeme < "2019-05-01", "18/19",
-                                                                              ifelse(b_ind_10_24$datum_vrijeme < "2020-05-01", "19/20",
-                                                                                     ifelse(b_ind_10_24$datum_vrijeme < "2021-05-01", "20/21",
-                                                                                            ifelse(b_ind_10_24$datum_vrijeme < "2022-05-01", "21/22",
-                                                                                                   ifelse(b_ind_10_24$datum_vrijeme < "2023-05-01", "22/23",
-                                                                                                          ifelse(b_ind_10_24$datum_vrijeme < "2024-05-31", "23/24",
-                                                                                                          )
-                                                                                                   )
-                                                                                            )
-                                                                                     )
-                                                                              )
-                                                                       )
-                                                                )
-                                                         )
-                                                  )
-                                           )
-                                    )
-                             )
-)
+b_ind_10_24 <- b_ind_10_24 %>%
+  mutate(
+    season = case_when(
+      datum_vrijeme < "2012-05-01" ~ "11/12",
+      datum_vrijeme < "2013-05-01" ~ "12/13",
+      datum_vrijeme < "2014-05-01" ~ "13/14",
+      datum_vrijeme < "2015-05-01" ~ "14/15",
+      datum_vrijeme < "2016-05-01" ~ "15/16",
+      datum_vrijeme < "2017-05-01" ~ "16/17",
+      datum_vrijeme < "2018-05-01" ~ "17/18",
+      datum_vrijeme < "2019-05-01" ~ "18/19",
+      datum_vrijeme < "2020-05-01" ~ "19/20",
+      datum_vrijeme < "2021-05-01" ~ "20/21",
+      datum_vrijeme < "2022-05-01" ~ "21/22",
+      datum_vrijeme < "2023-05-01" ~ "22/23",
+      datum_vrijeme < "2024-05-31" ~ "23/24"
+    )
+  )
 
-nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])   # Change season to see the quantity
+nrow(b_ind_10_24[b_ind_10_24$season == "11/12",])   # Check quantity for a given season
 
 # Group
 
