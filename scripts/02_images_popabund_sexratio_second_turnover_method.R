@@ -7,8 +7,6 @@
 if (!require('tidyverse')) install.packages('tidyverse'); library('tidyverse')
 if (!require('lubridate')) install.packages('lubridate'); library('lubridate')
 if (!require('writexl')) install.packages('writexl'); library('writexl')
-if (!require('readxl')) install.packages('readxl'); library('readxl')
-if (!require('cowplot')) install.packages('cowplot'); library('cowplot')
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 # Import dataset of images, select desired period and remove juvenile observations
@@ -272,43 +270,45 @@ ind_10_24_grp_plot <- ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
 
 # ******** 5. Population abundance and sex ratio between 2018 and 2023 ********
 
-# 
+# Add sex to the individual records table
 
 ris_interval_every2_18_23 <- ris_interval_every_18_23 %>% 
-  left_join(ris_spol_18_23, by = "oznaka")
+  left_join(ris_spol_18_23, by = "oznaka") 
 
-length(unique(ris_interval_every_18_23$oznaka)) 
+# Retain individual name, record date and sex
 
 ris_interval_every2_18_23 <- subset(ris_interval_every2_18_23, , select = c(1,3,7))
 
 # Assign seasons
 
-ris_interval_every2_18_23[, 'season'] = NA
+ris_interval_every2_18_23 <- ris_interval_every2_18_23 %>%
+  mutate(
+    season = case_when(
+      middle_sightings < "2019-05-01" ~ "18/19",
+      middle_sightings < "2020-05-01" ~ "19/20",
+      middle_sightings < "2021-05-01" ~ "20/21",
+      middle_sightings < "2022-05-01" ~ "21/22",
+      middle_sightings <= "2023-04-30" ~ "22/23"
+    )
+  )
 
-ris_interval_every2_18_23$season <- ifelse(ris_interval_every2_18_23$middle_sightings < "2019-05-01", "18/19",
-                                           ifelse(ris_interval_every2_18_23$middle_sightings < "2020-05-01", "19/20",
-                                                  ifelse(ris_interval_every2_18_23$middle_sightings < "2021-05-01", "20/21",
-                                                         ifelse(ris_interval_every2_18_23$middle_sightings < "2022-05-01", "21/22",
-                                                                ifelse(ris_interval_every2_18_23$middle_sightings <= "2023-04-30", "22/23",
-                                                                )
-                                                         )
-                                                  )
-                                           )
-)
+# Retain one record per individual in each season, then sex and season for sex-ratio calculation
 
 ris_interval_every2_each_18_23 <- ris_interval_every2_18_23 %>%
   group_by(oznaka, season) %>%
   select(oznaka, middle_sightings, spol, season) %>%
   filter(row_number(oznaka) == 1)
 
-length(unique(ris_interval_every2_each_18_23$oznaka))   
-
 ris_interval_every3_each_18_23 <- subset(ris_interval_every2_each_18_23, , select = c(3:4))
+
+# Rename sex categories
 
 colnames(ris_interval_every3_each_18_23)[1] <- "Sex"
 
 ris_interval_every3_each_18_23$Sex[ris_interval_every3_each_18_23$Sex == "M"] <- "Males"
 ris_interval_every3_each_18_23$Sex[ris_interval_every3_each_18_23$Sex == "Z"] <- "Females"
+
+# Remove one female which had uncertain identification
 
 r <- which(
   ris_interval_every3_each_18_23$Sex == "Females" &
@@ -317,27 +317,31 @@ r <- which(
 
 ris_interval_every3_each_18_23 <- ris_interval_every3_each_18_23[-r, ]
 
-ggplot(ris_interval_every3_each_18_23, aes(x = season, fill = Sex)) +
+# Plot
+
+ggplot(ris_interval_every3_each_18_23,
+  aes(x = season, fill = Sex)) +
   geom_bar(position = "fill") +
   xlab("Season") +
   ylab("Percentage") +
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "Set1") +
-  theme(axis.title.x = element_text(size = 27, margin = margin(t = 16)),
-        axis.title.y = element_text(size = 27, margin = margin(r = 16)),
-        axis.text.x = element_text(size = 25, margin = margin(t = 8)),
-        axis.text.y = element_text(size = 25, margin = margin(r = 8)),
-        legend.title = element_text(size = 27),
-        legend.text = element_text(size = 27),
-        text = element_text(family = "Calibri")
+  theme(
+    axis.title.x = element_text(size = 27, margin = margin(t = 16)),
+    axis.title.y = element_text(size = 27, margin = margin(r = 16)),
+    axis.text.x = element_text(size = 25, margin = margin(t = 8)),
+    axis.text.y = element_text(size = 25, margin = margin(r = 8)),
+    legend.title = element_text(size = 27),
+    legend.text = element_text(size = 27),
+    text = element_text(family = "Calibri")
   )
 
 
 # ******** 6. Second turnover calculation method ********
 
-nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "18/19",])   # Change season to see the quantity
+nrow(b_ind_10_24_grp[b_ind_10_24_grp$season == "18/19",])   # Check quantity for a given season
 
-# Check sex groups by season and subset
+# Create separate tables for each season and check sex composition, then retain individual names for each season
 
 inds_18_19 <- b_ind_10_24_grp %>%
   filter(season == "18/19")
@@ -386,8 +390,8 @@ ris_org_18_23 <- subset(ris_org_18_23, , select = -c(1, 3, 5:6))
 ris_startend_18_23 <- ris_org_18_23 %>%
   group_by(ime) %>%
   summarise(
-    start = min(datum, na.rm = T),
-    end = max(datum, na.rm = T)
+    start = min(datum, na.rm = TRUE),
+    end = max(datum, na.rm = TRUE)
   ) %>%
   arrange(ime)
 
@@ -402,7 +406,7 @@ ris_startend_18_23 <- as.data.frame(ris_startend_18_23)
 
 # Define residents and non-residents
 
-# Table with all record in date format
+# Table with all records in date format
 
 ris_rnr_18_23 <- ris_org_18_23 %>% 
   mutate(datum = as_date(datum))
@@ -412,8 +416,8 @@ ris_rnr_18_23 <- ris_org_18_23 %>%
 ris_rnr2_18_23 <- ris_rnr_18_23 %>% 
   group_by(ime) %>%
   summarise(
-    end = max(datum, na.rm = T),
-    start = min(datum, na.rm = T)
+    end = max(datum, na.rm = TRUE),
+    start = min(datum, na.rm = TRUE)
   ) %>%
   arrange(ime) %>% 
   mutate(sighting_interval = interval(start, end))    
@@ -460,58 +464,69 @@ table(ris_rnr6_18_23$ris_rnr5_18_23, ris_rnr6_18_23$spol)   # 67 non-residents (
 
 # Remove non-residents
 
-cat <- subset(ris_rnr6_18_23, , select = -c(2:4,6))
+category <- subset(ris_rnr6_18_23, , select = -c(2:4,6))
 
-colnames(cat)[1] <- "oznaka"
+colnames(category)[1] <- "oznaka"
 
 inds_18_19_names_cat <- inds_18_19_names %>%
-  left_join(cat, by = "oznaka")
+  left_join(category, by = "oznaka")
 inds_18_19_names_cat_res <- inds_18_19_names_cat %>%
   filter(ris_rnr5_18_23 == "res")                       # 47 individuals should be obtained here
 
 inds_19_20_names_cat <- inds_19_20_names %>%
-  left_join(cat, by = "oznaka")
+  left_join(category, by = "oznaka")
 inds_19_20_names_cat_res <- inds_19_20_names_cat %>%
   filter(ris_rnr5_18_23 == "res")                       # 61 individuals
 
 inds_20_21_names_cat <- inds_20_21_names %>%
-  left_join(cat, by = "oznaka")
+  left_join(category, by = "oznaka")
 inds_20_21_names_cat_res <- inds_20_21_names_cat %>%
   filter(ris_rnr5_18_23 == "res")                       # 74 individuals
 
 inds_21_22_names_cat <- inds_21_22_names %>%
-  left_join(cat, by = "oznaka")
+  left_join(category, by = "oznaka")
 inds_21_22_names_cat_res <- inds_21_22_names_cat %>%
   filter(ris_rnr5_18_23 == "res")                       # 64 individuals
 
 inds_22_23_names_cat <- inds_22_23_names %>%
-  left_join(cat, by = "oznaka")
+  left_join(category, by = "oznaka")
 inds_22_23_names_cat_res <- inds_22_23_names_cat %>%
   filter(ris_rnr5_18_23 == "res")                       # 72 individuals
 
 # Differences between seasons
 
 diff1819_1920_res <- setdiff(inds_18_19_names_cat_res, inds_19_20_names_cat_res)   # 16 individuals
-1600/47   # 34.04 %
+rate1819_1920 <- nrow(diff1819_1920_res) / nrow(inds_18_19_names_cat_res) * 100   # 34.04 %
 
 diff1920_2021_res <- setdiff(inds_19_20_names_cat_res, inds_20_21_names_cat_res)   # 16 individuals
-1600/61   # 26.22 %
+rate1920_2021 <- nrow(diff1920_2021_res) / nrow(inds_19_20_names_cat_res) * 100   # 26.22 %
 
 diff2021_2122_res <- setdiff(inds_20_21_names_cat_res, inds_21_22_names_cat_res)   # 29 individuals
-2900/74   # 39.18 %
+rate2021_2122 <- nrow(diff2021_2122_res) / nrow(inds_20_21_names_cat_res) * 100   # 39.18 %
 
 diff2122_2223_res <- setdiff(inds_21_22_names_cat_res, inds_22_23_names_cat_res)   # 16 individuals
-1600/64   # 25 %
+rate2122_2223 <- nrow(diff2122_2223_res) / nrow(inds_21_22_names_cat_res) * 100   # 25 %
 
-season_diff_res <- c("18/19 - 19/20", "19/20 - 20/21", "20/21 - 21/22", "21/22 - 22/23")
-rate_res <- c("34.04", "26.22", "39.18", "25")
+turnover_res <- data.frame(
+  season_diff_res = c(
+    "18/19 - 19/20",
+    "19/20 - 20/21",
+    "20/21 - 21/22",
+    "21/22 - 22/23"
+  ),
+  rate_res = c(
+    rate1819_1920,
+    rate1920_2021,
+    rate2021_2122,
+    rate2122_2223
+  )
+)
 
-turnover_res <- data.frame(season_diff_res, rate_res)
-turnover_res[, c(2)] <- sapply(turnover_res[, c(2)], as.numeric)
+mean(turnover_res$rate_res)
 
-(34.04 + 26.22 + 39.18 + 25) / 4   # 31.11 %
+# Plot
 
-ggplot(turnover_res, aes(x = season_diff_res, y = rate_res)) +
+turnover_res_plot <- ggplot(turnover_res, aes(x = season_diff_res, y = rate_res)) +
   geom_bar(stat = "identity") +
   xlab("Seasons") +
   ylab("Turnover rate (%)") +
@@ -520,4 +535,3 @@ ggplot(turnover_res, aes(x = season_diff_res, y = rate_res)) +
         axis.text.x = element_text(size = 25, margin = margin(t = 8)),
         axis.text.y = element_text(size = 25, margin = margin(r = 8)),
         text = element_text(family = "Calibri"))
-
