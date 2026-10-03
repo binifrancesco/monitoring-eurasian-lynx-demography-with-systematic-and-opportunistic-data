@@ -1,6 +1,6 @@
 
 # Script 2/3
-# Images for individual identification, population abundance and sex ratio and second turnover calculation method
+# Images for individual identification, population abundance, sex ratio and second turnover calculation method
 
 # Load required packages
 
@@ -25,7 +25,7 @@ b <- b %>%
 
 # *************************  1. Minimum and maximum quantities of identified lynx  *************************
 
-# List of individuals depending on which side they are captured
+# List of individuals depending on which side they are captured from
 
 lynx_L <- b %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>%
@@ -50,7 +50,7 @@ ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_min <- lynx_R, lynx_min <- lynx_L)   #
 ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lynx_L, lynx_LR)), lynx_max <- full_join(lynx_L,anti_join(lynx_R, lynx_LR)))   # 286
 
 
-# ********************** 2. Temporal intervals between records for each individual between 2018 and 2023 ************************
+# ********************** 2. Temporal intervals between sightings for each individual between 2018 and 2023 ************************
 
 b <- b %>%
   semi_join(lynx_min)
@@ -60,7 +60,7 @@ b_18_23 <- b %>%
 
 # Recreate ris_interval and ris_interval_org between 05/2018 and 04/2023
 
-# Table with the interval between first and last record for each animal
+# Table with the interval between first and last sighting for each animal
 
 ris_interval_18_23 <- b_18_23 %>%
   select ('datum_vrijeme', 'oznaka') %>% 
@@ -79,7 +79,7 @@ ris_interval_org_18_23 <- ris_interval_18_23 %>%
   select(oznaka, start, end) %>% 
   mutate(min_starost_zivotinje = end-start)         
 
-# Table with temporal intervals between different records for each individual + date of each record
+# Table with temporal intervals between different sightings for each individual + date of each sighting
 
 ris_interval_every_18_23 <- b_18_23 %>%
   select (datum_vrijeme, oznaka) %>%
@@ -90,7 +90,7 @@ ris_interval_every_18_23 <- b_18_23 %>%
   arrange(desc(time_interval)) %>%
   select(oznaka, time_interval, datum)
 
-# Joins start and end date of the capture interval and minimum age for each individual
+# Join start and end date of the capture interval and minimum age for each individual
 
 ris_interval_every_18_23 <- ris_interval_every_18_23 %>% 
   left_join(ris_interval_org_18_23, by = "oznaka")                 
@@ -116,7 +116,7 @@ min_lynx_age_new_18_23 <- ris_interval_org_18_23 %>%
 min_lynx_age_new_18_23 <- subset(min_lynx_age_new_18_23, , select = c(oznaka, min_age_year))
 min_lynx_age_new_18_23[] <- lapply(min_lynx_age_new_18_23, gsub, pattern = ' days', replacement = ' ')   
 
-# Table with date of first and last record, total capture interval and minimum age (years)
+# Table with date of first and last sighting, total capture interval and minimum age (years)
 
 ris_interval_avg_18_23 <- ris_interval_org_18_23
 colnames(ris_interval_avg_18_23)[4] <- 'total_capture_interval_(min_age)'
@@ -124,14 +124,14 @@ ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>%
   left_join(min_lynx_age_new_18_23, by = "oznaka") 
 colnames(ris_interval_avg_18_23)[5] <- 'min_age_years'               
 
-# Add the average interval between records for each lynx
+# Add the average interval between sightings for each lynx
 
-# Separate table with date of each record and interval between records
+# Separate table with date of each sighting and interval between sightings
 
 ris_interval_avg2_18_23 <- subset(ris_interval_every_18_23, , select = -c(6))
 ris_interval_avg2_18_23 <- na.omit(ris_interval_avg2_18_23)  
 
-# Table with average interval between records (days) for each individual
+# Table with average interval between sightings (days) for each individual
                                                                           
 avg_int_18_23 <- aggregate(ris_interval_avg2_18_23[, 5], list(ris_interval_avg2_18_23$oznaka), mean)
 colnames(avg_int_18_23)[1] <- "oznaka"
@@ -142,14 +142,14 @@ colnames(avg_int_18_23)[2] <- "avg_int_between_sightings"
 ris_interval_avg2_18_23 <- ris_interval_avg2_18_23 %>% 
   left_join(avg_int_18_23, by = "oznaka")                                         
 
-# Table with date of first and last record, total capture interval, minimum age (years) and average interval between records (days)
+# Table with date of first and last sighting, total capture interval, minimum age (years) and average interval between sightings (days)
 
 ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>% 
   left_join(avg_int_18_23, by = "oznaka")                                  
 
 ris_interval_avg_18_23[, c(5:6)] <- sapply(ris_interval_avg_18_23[, c(5:6)], as.numeric)      
 
-# Add number of records for each individual
+# Add number of sightings for each individual
 
 n_sightings_18_23 <- ris_interval_every_18_23 %>% count(oznaka)
 ris_interval_avg_18_23 <- ris_interval_avg_18_23 %>% 
@@ -219,7 +219,7 @@ idph_10_24_plot <- ggplot(b_idph_10_24, aes(x = season, group = 1)) +
   xlab("Season") +
   ylab("Number")
 
-# b_idph_10_24 needs to be stored to be used later, so it's already in the "data" folder
+# b_idph_10_24 needs to be stored for later use, so it's already in the "data" folder
 
 
 # ******* 4. Quantity of IDed animals between 05/2010 and 04/2024 (still not with minimum identified applied) *******
@@ -270,12 +270,12 @@ ind_10_24_grp_plot <- ggplot(b_ind_10_24_grp, aes(x = season, group = 1)) +
 
 # ******** 5. Population abundance and sex ratio between 2018 and 2023 ********
 
-# Add sex to the individual records table
+# Add sex to the individual sightings table
 
 ris_interval_every2_18_23 <- ris_interval_every_18_23 %>% 
   left_join(ris_spol_18_23, by = "oznaka") 
 
-# Retain individual name, record date and sex
+# Retain individual name, sighting dates and sex
 
 ris_interval_every2_18_23 <- subset(ris_interval_every2_18_23, , select = c(1,3,7))
 
@@ -292,7 +292,7 @@ ris_interval_every2_18_23 <- ris_interval_every2_18_23 %>%
     )
   )
 
-# Retain one record per individual in each season, then sex and season for sex-ratio calculation
+# Retain one sighting per individual in each season, then sex and season for sex-ratio calculation
 
 ris_interval_every2_each_18_23 <- ris_interval_every2_18_23 %>%
   group_by(oznaka, season) %>%
@@ -308,7 +308,7 @@ colnames(ris_interval_every3_each_18_23)[1] <- "Sex"
 ris_interval_every3_each_18_23$Sex[ris_interval_every3_each_18_23$Sex == "M"] <- "Males"
 ris_interval_every3_each_18_23$Sex[ris_interval_every3_each_18_23$Sex == "Z"] <- "Females"
 
-# Remove one female which had uncertain identification
+# Remove one female with uncertain identification
 
 r <- which(
   ris_interval_every3_each_18_23$Sex == "Females" &
@@ -373,7 +373,7 @@ inds_21_22_names <- subset(inds_21_22, , select = c(2))
 
 inds_22_23_names <- subset(inds_22_23, , select = c(2))
 
-# Table of all records of all individuals
+# Table of all sightings of all individuals
 
 ris_18_23 <- b_18_23
 
@@ -385,7 +385,7 @@ ris_org_18_23 <- ris_18_23 %>%
 
 ris_org_18_23 <- subset(ris_org_18_23, , select = -c(1, 3, 5:6))  
 
-# Table with first and last record and sex for all individuals
+# Table with first and last sightings and sex for all individuals
 
 ris_startend_18_23 <- ris_org_18_23 %>%
   group_by(ime) %>%
@@ -406,12 +406,12 @@ ris_startend_18_23 <- as.data.frame(ris_startend_18_23)
 
 # Define residents and non-residents
 
-# Table with all records in date format
+# Table with all sightings in date format
 
 ris_rnr_18_23 <- ris_org_18_23 %>% 
   mutate(datum = as_date(datum))
 
-# Table with start and end of each capture interval and date of each record
+# Table with start and end dates of each capture interval and date of each sighting
 
 ris_rnr2_18_23 <- ris_rnr_18_23 %>% 
   group_by(ime) %>%
