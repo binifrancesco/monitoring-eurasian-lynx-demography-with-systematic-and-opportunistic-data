@@ -23,7 +23,7 @@ b_10_24 <- b_10_24 %>%
   filter(!grepl("mlado|mladu", oznaka, ignore.case = TRUE))
 
 
-# *************************  1. Minimum and maximum numbers of identified lynx  *************************
+# *************************  1. Minimum and maximum quantities of identified lynx  *************************
 
 # List of individuals depending on which side they are captured
 
