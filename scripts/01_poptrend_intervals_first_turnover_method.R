@@ -25,7 +25,7 @@ b_10_24 <- b_10_24 %>%
 
 # *************************  1. Minimum and maximum quantities of identified lynx  *************************
 
-# List of individuals depending on which side they are captured
+# List of individuals depending on which side they are captured from
 
 lynx_L <- b_10_24 %>% 
   group_by(oznaka, slikana_strana_zivotinje) %>%
@@ -55,7 +55,7 @@ ifelse(nrow(lynx_L) <= nrow(lynx_R), lynx_max <- full_join(lynx_R, anti_join(lyn
 b_10_24 <- b_10_24 %>%
   semi_join(lynx_min)
 
-# Table with the capture interval (time span between first and last record) for each individual between 2010 and 2024
+# Table with the capture interval (time span between first and last sighting) for each individual between 2010 and 2024
 
 ris_interval <- b_10_24 %>%
   select ('datum_vrijeme', 'oznaka') %>% 
@@ -144,7 +144,7 @@ ris_interval_org_11_24 <- ris_interval_11_24 %>%
   select(oznaka, start, end) %>% 
   mutate(min_starost_zivotinje = end-start)
 
-# Table with date of each record, temporal interval between different records and 
+# Table with date of each sighting, temporal interval between different sightings and 
 # total capture interval (minimum age) of every individual
 
 ris_interval_every_11_24 <- b_10_24_2 %>%
@@ -177,7 +177,7 @@ min_lynx_age_new_11_24 <- ris_interval_org_11_24 %>%
 min_lynx_age_new_11_24 <- subset(min_lynx_age_new_11_24, , select = c(oznaka, min_age_year))
 min_lynx_age_new_11_24[] <- lapply(min_lynx_age_new_11_24, gsub, pattern = ' days', replacement = ' ')
 
-# Table with date of first and last record, total capture interval and minimum age
+# Table with date of first and last sighting, total capture interval and minimum age
 
 ris_interval_avg_11_24 <- ris_interval_org_11_24
 colnames(ris_interval_avg_11_24)[4] <- 'total_capture_interval_(min_age)'
@@ -192,7 +192,7 @@ ris_interval_avg_11_24[, c(4:5)] <- sapply(ris_interval_avg_11_24[, c(4:5)], as.
 ris_interval_avg_11_24 <- ris_interval_avg_11_24 %>% 
   mutate(real_min_age_years = (min_age_years) + 1)
 
-# Exclude those seen for the first time after 05/2018 (to keep the more long lived ones)
+# Exclude those seen for the first time after 05/2018 (to keep the longer-lived ones)
 
 ris_interval_avg2_11_24 <- ris_interval_avg_11_24 %>%
   filter(start < "2018-05-01")
@@ -240,16 +240,16 @@ minage_plot <- ggplot(ris_interval_avg2_11_24, aes(x = real_min_age_years, fill 
   )
 
 
-# ********************** 4. Temporal intervals between records ************************
+# ********************** 4. Temporal intervals between sightings ************************
 
 ris_interval_avg_11_24 <- subset(ris_interval_avg_11_24, , select = -c(6))
 
-# Table with date of each record and temporal interval between records (no NAs)
+# Table with date of each sighting and temporal interval between sightings (no NAs)
 
 ris_interval_avg3_11_24 <- subset(ris_interval_every_11_24, , select = -c(6))
 ris_interval_avg3_11_24 <- na.omit(ris_interval_avg3_11_24)
 
-# Table with average interval between records (days) for each individual
+# Table with average interval between sightings (days) for each individual
 
 avg_int_11_24 <- aggregate(ris_interval_avg3_11_24[, 5], list(ris_interval_avg3_11_24$oznaka), mean)
 colnames(avg_int_11_24)[1] <- "oznaka"
@@ -260,14 +260,14 @@ colnames(avg_int_11_24)[2] <- "avg_int_between_sightings"
 ris_interval_avg3_11_24 <- ris_interval_avg3_11_24 %>% 
   left_join(avg_int_11_24, by = "oznaka")                                  
 
-# Table with date of first and last record, total capture interval, minimum age and average interval between records
+# Table with date of first and last sighting, total capture interval, minimum age and average interval between sightings
 
 ris_interval_avg_11_24 <- ris_interval_avg_11_24 %>% 
   left_join(avg_int_11_24, by = "oznaka")     
 
 ris_interval_avg_11_24[, c(5:6)] <- sapply(ris_interval_avg_11_24[, c(5:6)], as.numeric)
 
-# Add number of records for each individual
+# Add number of sightings for each individual
 
 n_sightings_11_24 <- ris_interval_every_11_24 %>% count(oznaka)
 ris_interval_avg_11_24 <- ris_interval_avg_11_24 %>% 
@@ -303,7 +303,7 @@ ris_interval_every2_11_24 <- subset(ris_interval_every_11_24, , select = -c(2:4,
 ris_interval_every3_11_24 <- ris_interval_every2_11_24 %>%
   na.omit()
 
-# Identify longest interval between records
+# Identify longest interval between sightings
 
 max_int_11_24 <- ris_interval_every3_11_24 %>%
   filter(interval_between_sightings == max(interval_between_sightings))
@@ -328,7 +328,7 @@ colnames(ris_interval_avg5_11_24)[8] <- "Sex"
 ris_interval_avg5_11_24$Sex[ris_interval_avg5_11_24$Sex == "M"] <- "Males"
 ris_interval_avg5_11_24$Sex[ris_interval_avg5_11_24$Sex == "Z"] <- "Females"
 
-# Get parameters: number of records, maximum and average interval between records
+# Get parameters: number of sightings, maximum and average interval between sightings
 
 ris_interval_avg5_11_24[, c(4:7, 9)] <- sapply(ris_interval_avg5_11_24[, c(4:7, 9)], as.numeric)
 
